@@ -56,16 +56,21 @@ export default {
       }
 
       const payments = data.payments || [];
-      const totalBan = payments.reduce((sum, p) => sum + p.amount, 0);
-      const totalWork = payments.reduce((sum, p) => sum + (p.work_units || 0), 0);
-      const avgScore = payments.length ? (payments.reduce((s, p) => s + p.score, 0) / payments.length).toFixed(0) : 0;
+      // Sort newest first
+      payments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+      // Calculate stats
+      const totalBan = payments.reduce((sum, p) => sum + p.amount, 0);
+      const latestWork = payments.length ? payments[0].work_units : 0;
+      const latestScore = payments.length ? payments[0].score : 0;
+
+      // Populate UI
       document.getElementById('userInfo').classList.remove('hidden');
       document.getElementById('walletName').textContent = data.user.name;
       document.getElementById('created').textContent = new Date(data.user.created_at).toLocaleString();
       document.getElementById('totalBan').textContent = totalBan.toFixed(2) + ' BAN';
-      document.getElementById('totalWork').textContent = totalWork;
-      document.getElementById('avgScore').textContent = avgScore;
+      document.getElementById('totalWork').textContent = latestWork.toLocaleString();
+      document.getElementById('totalScore').textContent = latestScore.toLocaleString();
 
       const table = document.getElementById('history');
       table.innerHTML = '';
@@ -75,7 +80,7 @@ export default {
           <td class="px-4 py-2 whitespace-nowrap">\${new Date(p.created_at).toLocaleString()}</td>
           <td class="px-4 py-2 whitespace-nowrap">\${p.amount.toFixed(2)} BAN</td>
           <td class="px-4 py-2 whitespace-nowrap">\${p.score.toLocaleString()}</td>
-          <td class="px-4 py-2 whitespace-nowrap">\${p.work_units}</td>
+          <td class="px-4 py-2 whitespace-nowrap">\${p.work_units.toLocaleString()}</td>
           <td class="px-4 py-2 whitespace-nowrap text-yellow-400">
             <a href="https://creeper.banano.cc/explorer/block/\${p.block_hash}" target="_blank" class="hover:underline">View</a>
           </td>
@@ -120,8 +125,8 @@ export default {
         <p id="totalWork" class="text-2xl font-bold mt-1 truncate">-</p>
       </div>
       <div class="bg-gray-900 p-4 rounded-xl overflow-hidden">
-        <h3 class="text-sm text-gray-400">Average Score</h3>
-        <p id="avgScore" class="text-2xl font-bold mt-1 truncate">-</p>
+        <h3 class="text-sm text-gray-400">Total Score</h3>
+        <p id="totalScore" class="text-2xl font-bold mt-1 truncate">-</p>
       </div>
     </div>
 
@@ -147,8 +152,8 @@ export default {
   <footer class="mt-12 text-gray-500 text-sm text-center opacity-80">
     <p>Made by <span class="text-yellow-400 font-semibold">cw222444</span></p>
     <p>
-      <a href="https://github.com/cw222444" target="_blank" class="hover:text-yellow-400 hover:underline">
-        github.com/cw222444
+      <a href="https://github.com/cw222444/banano-miner-dashboard" target="_blank" class="hover:text-yellow-400 hover:underline">
+        github
       </a>
     </p>
   </footer>
